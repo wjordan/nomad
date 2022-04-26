@@ -953,7 +953,7 @@ func (a *allocReconciler) computeStop(group *structs.TaskGroup, nameIndex *alloc
 				stop[id] = alloc
 				a.result.stop = append(a.result.stop, allocStopResult{
 					alloc:             alloc,
-					statusDescription: allocNotNeeded,
+					statusDescription: allocNotNeeded + " due to promoted canary",
 				})
 				delete(untainted, id)
 
@@ -975,7 +975,7 @@ func (a *allocReconciler) computeStop(group *structs.TaskGroup, nameIndex *alloc
 			}
 			a.result.stop = append(a.result.stop, allocStopResult{
 				alloc:             alloc,
-				statusDescription: allocNotNeeded,
+				statusDescription: allocNotNeeded + " as it is migrating",
 			})
 			delete(migrate, id)
 			stop[id] = alloc
@@ -1003,7 +1003,7 @@ func (a *allocReconciler) computeStop(group *structs.TaskGroup, nameIndex *alloc
 			stop[id] = alloc
 			a.result.stop = append(a.result.stop, allocStopResult{
 				alloc:             alloc,
-				statusDescription: allocNotNeeded,
+				statusDescription: allocNotNeeded + " - name exists " + alloc.Name + " with status " + alloc.ClientStatus,
 			})
 			delete(untainted, id)
 
@@ -1020,7 +1020,7 @@ func (a *allocReconciler) computeStop(group *structs.TaskGroup, nameIndex *alloc
 		stop[id] = alloc
 		a.result.stop = append(a.result.stop, allocStopResult{
 			alloc:             alloc,
-			statusDescription: allocNotNeeded,
+			statusDescription: allocNotNeeded + " duplicate name " + alloc.Name,
 		})
 		delete(untainted, id)
 
@@ -1053,7 +1053,7 @@ func (a *allocReconciler) computeStopByReconnecting(untainted, reconnecting, sto
 			stop[reconnectingAlloc.ID] = reconnectingAlloc
 			a.result.stop = append(a.result.stop, allocStopResult{
 				alloc:             reconnectingAlloc,
-				statusDescription: allocNotNeeded,
+				statusDescription: allocNotNeeded + " reconnect out of date",
 			})
 			delete(reconnecting, reconnectingAlloc.ID)
 
@@ -1089,7 +1089,7 @@ func (a *allocReconciler) computeStopByReconnecting(untainted, reconnecting, sto
 				continue
 			}
 
-			statusDescription := allocNotNeeded
+			statusDescription := allocNotNeeded + " due to reconnect"
 			if untaintedAlloc.Job.Version > reconnectingAlloc.Job.Version ||
 				untaintedAlloc.Job.CreateIndex > reconnectingAlloc.Job.CreateIndex ||
 				untaintedMaxScoreMeta.NormScore > reconnectingMaxScoreMeta.NormScore {

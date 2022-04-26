@@ -223,11 +223,26 @@ func (a allocSet) filterByTainted(taintedNodes map[string]*structs.Node, serverS
 	disconnecting = make(map[string]*structs.Allocation)
 	reconnecting = make(map[string]*structs.Allocation)
 	ignore = make(map[string]*structs.Allocation)
+	runningAllocsByName := make(map[string][]*structs.Allocation)
 
 	for _, alloc := range a {
 		// make sure we don't apply any reconnect logic to task groups
 		// without max_client_disconnect
 		supportsDisconnectedClients := alloc.SupportsDisconnectedClients(serverSupportsDisconnectedClients)
+
+		// Keep track of running allocs by name so that we can detect reconnects
+		// that have not yet finished syncing their task events.
+		if supportsDisconnectedClients {
+			runningAllocs, hasEntry := runningAllocsByName[alloc.Name]
+			if alloc.DesiredStatus == structs.AllocDesiredStatusRun &&
+				alloc.ClientStatus == structs.AllocClientStatusRunning {
+				if hasEntry {
+					runningAllocsByName[alloc.Name] = append(runningAllocs, alloc)
+				} else {
+					runningAllocsByName[alloc.Name] = []*structs.Allocation{alloc}
+				}
+			}
+		}
 
 		reconnected := false
 		expired := false
@@ -344,6 +359,49 @@ func (a allocSet) filterByTainted(taintedNodes map[string]*structs.Node, serverS
 
 		// All other allocs are untainted
 		untainted[alloc.ID] = alloc
+	}
+
+	// Iterate over duplicate allocs and find which one is reconnecting if the
+	// reconnect alloc sync is incomplete. Assumes we want to keep the oldest if
+	// it is still run/running.
+	for _, allocs := range runningAllocsByName {
+		if len(allocs) < 2 {
+			continue
+		}
+		var original *structs.Allocation
+		var reconnectCandidates []*structs.Allocation
+		for _, alloc := range allocs {
+			// Skip allocs that are not in a reconnectable state
+			if alloc.DesiredStatus != structs.AllocDesiredStatusRun ||
+				alloc.ClientStatus != structs.AllocClientStatusRunning {
+				continue
+			}
+			// Skip canarying allocs that are not yet healthy
+			if alloc.DeploymentStatus != nil &&
+				alloc.DeploymentStatus.IsCanary() &&
+				!alloc.DeploymentStatus.IsHealthy() {
+				continue
+			}
+			reconnectCandidates = append(reconnectCandidates, alloc)
+			if original == nil {
+				original = alloc
+				continue
+			}
+			// Reconnect the oldest running.
+			if alloc.CreateTime < original.CreateTime {
+				original = alloc
+			}
+		}
+
+		// Identify the original and update sets.
+		// If no original has been identified, or we don't have any competing
+		// candidates, there's nothing to update.
+		if original == nil || len(reconnectCandidates) < 2 {
+			continue
+		}
+
+		reconnecting[original.ID] = original
+		delete(untainted, original.ID)
 	}
 
 	return

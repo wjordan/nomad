@@ -19,6 +19,8 @@ import (
 func Register(jobID, jobFilePath string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
+	//cmdCtx := exec.CommandContext(ctx, "nomad", "job", "run", "-detach", "-")
+	//cmdCtx.Env = append(cmdCtx.Env, "NOMAD_ADDR=http://192.168.56.11:4646")
 	return register(jobID, jobFilePath, exec.CommandContext(ctx, "nomad", "job", "run", "-detach", "-"))
 }
 
@@ -34,6 +36,9 @@ func RegisterWithArgs(jobID, jobFilePath string, args ...string) error {
 	baseArgs = append(baseArgs, "-")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
+
+	//cmdCtx := exec.CommandContext(ctx, "nomad", baseArgs...)
+	//cmdCtx.Env = append(cmdCtx.Env, "NOMAD_ADDR=http://192.168.56.11:4646")
 
 	return register(jobID, jobFilePath, exec.CommandContext(ctx, "nomad", baseArgs...))
 }

@@ -14,6 +14,8 @@ import (
 func Command(cmd string, args ...string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
+	// cmdCtx := exec.CommandContext(ctx, cmd, args...)
+	// cmdCtx.Env = append(cmdCtx.Env, "NOMAD_ADDR=http://192.168.56.11:4646")
 	bytes, err := exec.CommandContext(ctx, cmd, args...).CombinedOutput()
 	out := string(bytes)
 	if err != nil {

@@ -754,6 +754,7 @@ func TestAllocSet_filterByTainted(t *testing.T) {
 					NodeID:             "normal",
 					TaskGroup:          "web",
 					PreviousAllocation: "running-original",
+					CreateTime:         now.UnixNano(),
 				},
 				// Running and replaced allocs on reconnected nodes are reconnecting
 				"running-original": {
@@ -766,6 +767,7 @@ func TestAllocSet_filterByTainted(t *testing.T) {
 					TaskGroup:     "web",
 					AllocStates:   unknownAllocState,
 					TaskStates:    reconnectTaskState,
+					CreateTime:    now.Add(-1 * time.Hour).UnixNano(),
 				},
 			},
 			untainted: allocSet{
@@ -778,6 +780,7 @@ func TestAllocSet_filterByTainted(t *testing.T) {
 					NodeID:             "normal",
 					TaskGroup:          "web",
 					PreviousAllocation: "running-original",
+					CreateTime:         now.UnixNano(),
 				},
 			},
 			migrate:       allocSet{},
@@ -793,6 +796,7 @@ func TestAllocSet_filterByTainted(t *testing.T) {
 					TaskGroup:     "web",
 					AllocStates:   unknownAllocState,
 					TaskStates:    reconnectTaskState,
+					CreateTime:    now.Add(-1 * time.Hour).UnixNano(),
 				},
 			},
 			ignore: allocSet{},

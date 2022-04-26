@@ -281,6 +281,7 @@ func defaultHttpClient() *http.Client {
 // DefaultConfig returns a default configuration for the client
 func DefaultConfig() *Config {
 	config := &Config{
+		// Address:   "http://192.168.56.11:4646",
 		Address:   "http://127.0.0.1:4646",
 		TLSConfig: &TLSConfig{},
 	}

@@ -1,1 +1,5 @@
 *.zip
+
+uploads/*
+uploads/shared/*
+!uploads/README.md

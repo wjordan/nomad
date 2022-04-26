@@ -5539,6 +5539,7 @@ func TestReconciler_Disconnected_Client(t *testing.T) {
 			// Set alloc state
 			disconnectedAllocCount := tc.disconnectedAllocCount
 			for _, alloc := range allocs {
+				alloc.CreateTime = time.Now().UnixNano()
 				alloc.DesiredStatus = tc.serverDesiredStatus
 
 				if tc.maxDisconnect != nil {
@@ -5546,6 +5547,7 @@ func TestReconciler_Disconnected_Client(t *testing.T) {
 				}
 
 				if disconnectedAllocCount > 0 {
+					alloc.CreateTime = time.Now().Add(-1 * time.Hour).UnixNano()
 					alloc.ClientStatus = tc.disconnectedAllocStatus
 					// Set the node id on all the disconnected allocs to the node under test.
 					alloc.NodeID = testNode.ID
@@ -5554,7 +5556,7 @@ func TestReconciler_Disconnected_Client(t *testing.T) {
 					alloc.AllocStates = []*structs.AllocState{{
 						Field: structs.AllocStateFieldClientStatus,
 						Value: structs.AllocClientStatusUnknown,
-						Time:  time.Now(),
+						Time:  time.Now().Add(-1 * time.Minute),
 					}}
 
 					event := structs.NewTaskEvent(structs.TaskClientReconnected)
@@ -5577,6 +5579,7 @@ func TestReconciler_Disconnected_Client(t *testing.T) {
 						continue
 					}
 					replacement := alloc.Copy()
+					replacement.CreateTime = time.Now().Add(-1 * time.Minute).UnixNano()
 					replacement.ID = uuid.Generate()
 					replacement.NodeID = uuid.Generate()
 					replacement.ClientStatus = structs.AllocClientStatusRunning
@@ -5599,6 +5602,7 @@ func TestReconciler_Disconnected_Client(t *testing.T) {
 						replacement.ClientStatus = structs.AllocClientStatusFailed
 						nextReplacement := replacement.Copy()
 						nextReplacement.ID = uuid.Generate()
+						nextReplacement.CreateTime = time.Now().Add(-30 * time.Second).UnixNano()
 						nextReplacement.ClientStatus = structs.AllocClientStatusRunning
 						nextReplacement.PreviousAllocation = replacement.ID
 						replacement.NextAllocation = nextReplacement.ID
@@ -5923,7 +5927,8 @@ func TestReconciler_Client_Disconnect_Canaries(t *testing.T) {
 					alloc.Job = updatedJob
 					alloc.TaskGroup = updatedJob.TaskGroups[0].Name
 					alloc.DeploymentStatus = &structs.AllocDeploymentStatus{
-						Canary: true,
+						Canary:  true,
+						Healthy: helper.BoolToPtr(false),
 					}
 					if alloc.ClientStatus == structs.AllocClientStatusRunning {
 						alloc.DeploymentStatus.Healthy = helper.BoolToPtr(true)
