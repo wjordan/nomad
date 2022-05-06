@@ -29,7 +29,7 @@ job "connect_terminating" {
       driver = "docker"
 
       config {
-        image        = "hashicorpnomad/counter-api:v3"
+        image        = "hashicorp/counter-api:v3"
         network_mode = "host"
       }
 
@@ -59,7 +59,7 @@ job "connect_terminating" {
       driver = "docker"
 
       config {
-        image        = "hashicorpnomad/counter-api:v3"
+        image        = "hashicorp/counter-api:v3"
         network_mode = "host"
       }
 
@@ -156,7 +156,7 @@ job "connect_terminating" {
       }
 
       config {
-        image = "hashicorpnomad/counter-dashboard:v3"
+        image = "hashicorp/counter-dashboard:v3"
       }
     }
   }
@@ -198,7 +198,7 @@ job "connect_terminating" {
       }
 
       config {
-        image = "hashicorpnomad/counter-dashboard:v3"
+        image = "hashicorp/counter-dashboard:v3"
       }
     }
   }
