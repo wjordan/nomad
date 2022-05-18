@@ -80,7 +80,7 @@ func (o *OperatorSchedulerSetConfig) Run(args []string) int {
 	// user configuration onto.
 	resp, _, err := client.Operator().SchedulerGetConfiguration(nil)
 	if err != nil {
-		o.Ui.Error(fmt.Sprintf("Error querying for Autopilot configuration: %s", err))
+		o.Ui.Error(fmt.Sprintf("Error querying for scheduler configuration: %s", err))
 		return 1
 	}
 	schedulerConfig := resp.SchedulerConfig
