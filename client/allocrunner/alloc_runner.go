@@ -652,30 +652,6 @@ func (ar *allocRunner) killTasks() map[string]*structs.TaskState {
 	}
 	wg.Wait()
 
-	// Stop sidecar tasks last
-	for name, tr := range ar.tasks {
-		if !tr.IsSidecarTask() {
-			continue
-		}
-
-		wg.Add(1)
-		go func(name string, tr *taskrunner.TaskRunner) {
-			defer wg.Done()
-			taskEvent := structs.NewTaskEvent(structs.TaskKilling)
-			taskEvent.SetKillTimeout(tr.Task().KillTimeout)
-			err := tr.Kill(context.TODO(), taskEvent)
-			if err != nil && err != taskrunner.ErrTaskNotRunning {
-				ar.logger.Warn("error stopping task", "error", err, "task_name", name)
-			}
-
-			taskState := tr.TaskState()
-			mu.Lock()
-			states[name] = taskState
-			mu.Unlock()
-		}(name, tr)
-	}
-	wg.Wait()
-
 	return states
 }
 
