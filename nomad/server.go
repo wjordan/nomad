@@ -431,6 +431,10 @@ func NewServer(config *Config, consulCatalog consul.CatalogAPI, consulConfigEntr
 		return nil, fmt.Errorf("failed to create volume watcher: %v", err)
 	}
 
+	// Start the eval broker notification system so any subscribers can get
+	// updates when the processes SetEnabled is triggered.
+	go s.evalBroker.enabledNotifier.Run(s.shutdownCh)
+
 	// Setup the node drainer.
 	s.setupNodeDrainer()
 

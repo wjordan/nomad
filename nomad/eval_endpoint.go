@@ -126,16 +126,26 @@ func (e *Eval) Dequeue(args *structs.EvalDequeueRequest,
 			args.SchedulerVersion, scheduler.SchedulerVersion)
 	}
 
-	// If the eval broker is not enabled, but we are the leader, we have
-	// nothing to do. Not checking this will return errors to the workers which
-	// does nothing but clog up the logs.
-	if !e.srv.evalBroker.Enabled() {
-		return nil
-	}
-
 	// Ensure there is a default timeout
 	if args.Timeout <= 0 {
 		args.Timeout = DefaultDequeueTimeout
+	}
+
+	// If the eval broker is paused, attempt to block and wait for a state
+	// change before returning. This avoids a tight loop and mimics the
+	// behaviour where there are no evals to process.
+	//
+	// The call can return because either the timeout is reached or the broker
+	// SetEnabled function was called to modify its state. It is possible this
+	// is because of leadership transition, therefore the RPC should exit to
+	// allow all safety checks and RPC forwarding to occur again.
+	//
+	// The log line is trace, because the default worker timeout is 500ms which
+	// produces a large amount of logging.
+	if !e.srv.evalBroker.Enabled() {
+		message := e.srv.evalBroker.enabledNotifier.WaitForChange(args.Timeout)
+		e.logger.Trace("eval broker wait for un-pause", "message", message)
+		return nil
 	}
 
 	// Attempt the dequeue
