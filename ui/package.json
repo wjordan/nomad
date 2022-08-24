@@ -101,7 +101,7 @@
     "ember-on-resize-modifier": "^1.0.0",
     "ember-overridable-computed": "^1.0.0",
     "ember-page-title": "^6.2.2",
-    "ember-power-select": "^4.1.7",
+    "ember-power-select": "^6.0.1",
     "ember-qunit": "^5.1.5",
     "ember-render-helpers": "^0.2.0",
     "ember-resolver": "^8.0.3",
