@@ -134,6 +134,14 @@ func (f *NetworkFingerprint) Fingerprint(req *FingerprintRequest, resp *Fingerpr
 
 func (f *NetworkFingerprint) createNodeNetworkResources(ifaces []net.Interface, disallowLinkLocal bool, conf *config.Config) ([]*structs.NodeNetworkResource, error) {
 	nets := make([]*structs.NodeNetworkResource, 0)
+	ri, err := sockaddr.NewRouteInfo()
+	if err != nil {
+		return nil, err
+	}
+	defaultIface, err := ri.GetDefaultInterfaceName()
+	if err != nil {
+		return nil, err
+	}
 	for _, iface := range ifaces {
 		speed := f.linkSpeed(iface.Name)
 		if speed == 0 {
@@ -152,14 +160,6 @@ func (f *NetworkFingerprint) createNodeNetworkResources(ifaces []net.Interface, 
 			return nil, err
 		}
 		var networkAddrs, linkLocalAddrs []structs.NodeNetworkAddress
-		ri, err := sockaddr.NewRouteInfo()
-		if err != nil {
-			return nil, err
-		}
-		defaultIface, err := ri.GetDefaultInterfaceName()
-		if err != nil {
-			return nil, err
-		} 
 		for _, addr := range addrs {
 			// Find the IP Addr and the CIDR from the Address
 			var ip net.IP
