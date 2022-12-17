@@ -152,6 +152,14 @@ func (f *NetworkFingerprint) createNodeNetworkResources(ifaces []net.Interface, 
 			return nil, err
 		}
 		var networkAddrs, linkLocalAddrs []structs.NodeNetworkAddress
+		ri, err := sockaddr.NewRouteInfo()
+		if err != nil {
+			return nil, err
+		}
+		defaultIface, err := ri.GetDefaultInterfaceName()
+		if err != nil {
+			return nil, err
+		} 
 		for _, addr := range addrs {
 			// Find the IP Addr and the CIDR from the Address
 			var ip net.IP
@@ -168,7 +176,7 @@ func (f *NetworkFingerprint) createNodeNetworkResources(ifaces []net.Interface, 
 			} else {
 				family = structs.NodeNetworkAF_IPv6
 			}
-			for _, alias := range deriveAddressAliases(iface, ip, conf) {
+			for _, alias := range deriveAddressAliases(iface, ip, conf, defaultIface) {
 				newAddr := structs.NodeNetworkAddress{
 					Address: ip.String(),
 					Family:  family,
@@ -206,7 +214,7 @@ func (f *NetworkFingerprint) createNodeNetworkResources(ifaces []net.Interface, 
 	return nets, nil
 }
 
-func deriveAddressAliases(iface net.Interface, addr net.IP, config *config.Config) (aliases []string) {
+func deriveAddressAliases(iface net.Interface, addr net.IP, config *config.Config, defaultIface string) (aliases []string) {
 	for name, conf := range config.HostNetworks {
 		var cidrMatch, ifaceMatch bool
 		if conf.CIDR != "" {
@@ -249,11 +257,8 @@ func deriveAddressAliases(iface net.Interface, addr net.IP, config *config.Confi
 		if config.NetworkInterface == iface.Name {
 			return []string{"default"}
 		}
-	} else if ri, err := sockaddr.NewRouteInfo(); err == nil {
-		defaultIface, err := ri.GetDefaultInterfaceName()
-		if err == nil && iface.Name == defaultIface {
-			return []string{"default"}
-		}
+	} else if iface.Name == defaultIface {
+		return []string{"default"}
 	}
 
 	return
