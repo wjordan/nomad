@@ -7,7 +7,7 @@ replace (
 	github.com/NYTimes/gziphandler => github.com/NYTimes/gziphandler v1.0.0
 
 	github.com/hashicorp/go-discover => github.com/hashicorp/go-discover v0.0.0-20200812215701-c4b85f6ed31f
-	github.com/hashicorp/go-sockaddr => github.com/wjordan/go-sockaddr v0.0.0-20221216234625-7a8ce1c93a38
+	github.com/hashicorp/go-sockaddr => github.com/wjordan/go-sockaddr v0.0.0-20230125193213-3363db7d2558
 	github.com/hashicorp/hcl => github.com/hashicorp/hcl v1.0.1-0.20201016140508-a07e7d50bbee
 	github.com/hashicorp/nomad/api => ./api
 	github.com/kr/pty => github.com/kr/pty v1.1.5
