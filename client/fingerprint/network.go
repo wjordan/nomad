@@ -56,13 +56,6 @@ func (b *DefaultNetworkInterfaceDetector) Addrs(intf *net.Interface) ([]net.Addr
 	return intf.Addrs()
 }
 
-// NewNetworkFingerprint returns a new NetworkFingerprinter with the given
-// logger
-func NewNetworkFingerprint(logger log.Logger) Fingerprint {
-	f := &NetworkFingerprint{logger: logger.Named("network"), interfaceDetector: &DefaultNetworkInterfaceDetector{}}
-	return f
-}
-
 func (f *NetworkFingerprint) Fingerprint(req *FingerprintRequest, resp *FingerprintResponse) error {
 	cfg := req.Config
 
